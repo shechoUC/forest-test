@@ -153,6 +153,53 @@ void main() {
       },
     );
 
+    blocTest<BreweryListBloc, BreweryListState>(
+      'reloads when the query returns to the one still loading',
+      setUp: () {
+        final responses = [
+          // Never completes: restartable cancels this handler.
+          Completer<List<Brewery>>().future,
+          Future.value(breweries(2)),
+        ];
+        when(
+          () => repository.searchBreweries(
+            query: 'dog',
+            page: 1,
+            perPage: kBreweriesPerPage,
+          ),
+        ).thenAnswer((_) => responses.removeAt(0));
+      },
+      build: () => BreweryListBloc(repository),
+      act: (bloc) async {
+        bloc.add(const BreweryListSearchChanged('dog'));
+        await Future<void>.delayed(
+          kSearchDebounce + const Duration(milliseconds: 100),
+        );
+        bloc
+          ..add(const BreweryListSearchChanged('dogx'))
+          ..add(const BreweryListSearchChanged('dog'));
+      },
+      wait: kSearchDebounce + const Duration(milliseconds: 100),
+      expect: () => [
+        const BreweryListLoading(query: 'dog'),
+        BreweryListLoaded(
+          items: breweries(2),
+          page: 1,
+          hasMore: false,
+          query: 'dog',
+        ),
+      ],
+      verify: (_) {
+        verify(
+          () => repository.searchBreweries(
+            query: 'dog',
+            page: 1,
+            perPage: kBreweriesPerPage,
+          ),
+        ).called(2);
+      },
+    );
+
     final slowPage2 = Completer<List<Brewery>>();
     blocTest<BreweryListBloc, BreweryListState>(
       'ignores a page that arrives after the query changed',

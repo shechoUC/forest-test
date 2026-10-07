@@ -50,8 +50,14 @@ class BreweryListBloc extends Bloc<BreweryListEvent, BreweryListState> {
     Emitter<BreweryListState> emit,
   ) async {
     final query = event.query.trim();
-    final alreadyShowing = query == state.query && state is! BreweryListFailure;
-    if (alreadyShowing && state is! BreweryListInitial) return;
+    // Only skip when the results for this query are already on screen. A
+    // Loading state may belong to a handler that restartable just cancelled,
+    // so returning there would leave the spinner up forever.
+    final current = state;
+    final alreadyShowing =
+        query == current.query &&
+        (current is BreweryListLoaded || current is BreweryListEmpty);
+    if (alreadyShowing) return;
     await _loadFirstPage(query, emit);
   }
 
