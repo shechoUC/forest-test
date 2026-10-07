@@ -16,12 +16,15 @@ class BreweryDetailCubit extends Cubit<BreweryDetailState> {
   final BreweryRepository _repository;
 
   Future<void> load(String id) async {
+    if (isClosed) return;
     emit(const BreweryDetailLoading());
     try {
       final brewery = await _repository.getBrewery(id);
+      if (isClosed) return;
       emit(BreweryDetailLoaded(brewery));
     } on BreweryException catch (e, stackTrace) {
       addError(e, stackTrace);
+      if (isClosed) return;
       emit(
         BreweryDetailFailure(
           userMessageFor(e),

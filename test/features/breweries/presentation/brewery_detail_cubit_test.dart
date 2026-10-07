@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forest_test/features/breweries/domain/entities/brewery.dart';
 import 'package:forest_test/features/breweries/domain/exceptions/brewery_exception.dart';
 import 'package:forest_test/features/breweries/domain/repositories/brewery_repository.dart';
 import 'package:forest_test/features/breweries/presentation/bloc/brewery_detail/brewery_detail_cubit.dart';
@@ -68,4 +71,34 @@ void main() {
       BreweryDetailLoaded(brewery(1)),
     ],
   );
+
+  group('when the cubit is closed before the request completes', () {
+    test('does not emit after a successful response', () async {
+      final completer = Completer<Brewery>();
+      when(() => repository.getBrewery('id-1'))
+          .thenAnswer((_) => completer.future);
+      final cubit = BreweryDetailCubit(repository);
+
+      final pending = cubit.load('id-1');
+      await cubit.close();
+      completer.complete(brewery(1));
+
+      await expectLater(pending, completes);
+      expect(cubit.state, const BreweryDetailLoading());
+    });
+
+    test('does not emit after a failed response', () async {
+      final completer = Completer<Brewery>();
+      when(() => repository.getBrewery('id-1'))
+          .thenAnswer((_) => completer.future);
+      final cubit = BreweryDetailCubit(repository);
+
+      final pending = cubit.load('id-1');
+      await cubit.close();
+      completer.completeError(const NetworkException());
+
+      await expectLater(pending, completes);
+      expect(cubit.state, const BreweryDetailLoading());
+    });
+  });
 }
