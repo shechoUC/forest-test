@@ -9,4 +9,5 @@ String userMessageFor(BreweryException exception) => switch (exception) {
     'The server had a problem (${statusCode ?? 'unknown'}). Try again later.',
   DataParsingException() =>
     'We received data we could not read. Try again later.',
+  UnknownException() => 'Something went wrong. Try again later.',
 };

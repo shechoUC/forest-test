@@ -59,6 +59,20 @@ void main() {
   );
 
   blocTest<BreweryDetailCubit, BreweryDetailState>(
+    'emits a retryable Failure on unexpected errors',
+    setUp: () =>
+        when(() => repository.getBrewery('id-1'))
+            .thenThrow(UnknownException(TypeError())),
+    build: () => BreweryDetailCubit(repository),
+    act: (cubit) => cubit.load('id-1'),
+    expect: () => [
+      const BreweryDetailLoading(),
+      isA<BreweryDetailFailure>().having((s) => s.canRetry, 'canRetry', true),
+    ],
+    errors: () => [isA<UnknownException>()],
+  );
+
+  blocTest<BreweryDetailCubit, BreweryDetailState>(
     'goes back to Loading when retrying after a failure',
     setUp: () =>
         when(() => repository.getBrewery('id-1'))

@@ -211,7 +211,13 @@ class _BreweryDetails extends StatelessWidget {
 
   Future<void> _launch(BuildContext context, Uri uri) async {
     final messenger = ScaffoldMessenger.of(context);
-    if (!await launchUrl(uri)) {
+    bool launched;
+    try {
+      launched = await launchUrl(uri);
+    } on PlatformException {
+      launched = false;
+    }
+    if (!launched) {
       messenger.showSnackBar(
         const SnackBar(content: Text('Could not open this link.')),
       );

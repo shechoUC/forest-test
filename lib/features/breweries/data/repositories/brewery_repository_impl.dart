@@ -49,6 +49,10 @@ class BreweryRepositoryImpl implements BreweryRepository {
       throw _mapDioException(e, notFoundId);
     } on FormatException catch (e) {
       throw DataParsingException(e.message);
+    } on BreweryException {
+      rethrow;
+    } catch (e, stackTrace) {
+      Error.throwWithStackTrace(UnknownException(e), stackTrace);
     }
   }
 

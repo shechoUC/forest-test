@@ -85,4 +85,16 @@ void main() {
       throwsA(isA<DataParsingException>()),
     );
   });
+
+  test('wraps unexpected errors in UnknownException', () {
+    final error = TypeError();
+    when(() => remote.fetchBreweries(page: 1, perPage: 20)).thenThrow(error);
+
+    expect(
+      repository.getBreweries(page: 1, perPage: 20),
+      throwsA(
+        isA<UnknownException>().having((e) => e.error, 'error', same(error)),
+      ),
+    );
+  });
 }

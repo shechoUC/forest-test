@@ -45,3 +45,14 @@ final class DataParsingException extends BreweryException {
   @override
   String toString() => 'DataParsingException: $message';
 }
+
+/// Anything else that went wrong, e.g. a bug in a mapper. Keeps the original
+/// error so it can still be reported.
+final class UnknownException extends BreweryException {
+  const UnknownException(this.error);
+
+  final Object error;
+
+  @override
+  String toString() => 'UnknownException: $error';
+}
