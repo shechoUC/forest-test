@@ -14,7 +14,8 @@ class BreweryApp extends StatelessWidget {
       title: 'Breweries',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
-      initialRoute: AppRouter.breweries,
+      initialRoute: router.initialRoute,
+      onGenerateInitialRoutes: router.onGenerateInitialRoutes,
       onGenerateRoute: router.onGenerateRoute,
     );
   }

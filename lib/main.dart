@@ -6,9 +6,9 @@ import 'app/app_bloc_observer.dart';
 import 'app/app_router.dart';
 import 'core/di/injection.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  configureDependencies();
+  await configureDependencies();
   Bloc.observer = const AppBlocObserver();
   runApp(BreweryApp(router: AppRouter(getIt)));
 }
