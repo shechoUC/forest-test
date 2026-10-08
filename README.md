@@ -56,7 +56,7 @@ dart run build_runner build --delete-conflicting-outputs
   Blocs catch only those types, turn them into user-facing states and report
   them via `addError`, so they all reach `AppBlocObserver`. There are no empty
   `catch` blocks.
-- **Tests** (23): `bloc_test` + `mocktail` for the list Bloc (Loading → Loaded,
+- **Tests** (40): `bloc_test` + `mocktail` for the list Bloc (Loading → Loaded,
   Loading → Failure, empty state, pagination, a failed next page, debounce,
   stale responses) and the detail Cubit, plus repository error mapping and
   DTO parsing.
@@ -67,6 +67,17 @@ dart run build_runner build --delete-conflicting-outputs
 (300 ms). Rapid typing results in one request, and a request still running for
 an old query is cancelled. Search results are paginated through the same flow
 as the full list, and clearing the field goes back to the full list.
+
+**Onboarding**
+
+On first launch the app shows three tips (explore, search, visit or call)
+before the list. Users can swipe, tap Next or skip. Completion is stored with
+`shared_preferences`, which is resolved before `runApp` (`@preResolve`) so
+`AppRouter` can pick the initial route synchronously. A custom
+`onGenerateInitialRoutes` opens only the onboarding route; the default would
+also push `/` underneath and load the list early. If saving fails the user
+still moves on and the error goes to `AppBlocObserver`; the tips just show
+again next launch.
 
 **UI in Forest's visual language**
 
