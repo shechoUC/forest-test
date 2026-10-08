@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// How long each tip stays on screen before moving to the next one.
+const kOnboardingTipDuration = Duration(seconds: 5);
+
 class OnboardingTip {
   const OnboardingTip({
     required this.icon,

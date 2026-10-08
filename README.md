@@ -56,7 +56,7 @@ dart run build_runner build --delete-conflicting-outputs
   Blocs catch only those types, turn them into user-facing states and report
   them via `addError`, so they all reach `AppBlocObserver`. There are no empty
   `catch` blocks.
-- **Tests** (40): `bloc_test` + `mocktail` for the list Bloc (Loading → Loaded,
+- **Tests** (43): `bloc_test` + `mocktail` for the list Bloc (Loading → Loaded,
   Loading → Failure, empty state, pagination, a failed next page, debounce,
   stale responses) and the detail Cubit, plus repository error mapping and
   DTO parsing.
@@ -71,7 +71,10 @@ as the full list, and clearing the field goes back to the full list.
 **Onboarding**
 
 On first launch the app shows three tips (explore, search, visit or call)
-before the list. Users can swipe, tap Next or skip. Completion is stored with
+before the list. Each tip moves on by itself after 5 seconds while its dot
+fills up, like stories; the last one waits for "Let's go". Users can also
+swipe (the timer pauses while dragging), tap Next or skip. Completion is
+stored with
 `shared_preferences`, which is resolved before `runApp` (`@preResolve`) so
 `AppRouter` can pick the initial route synchronously. A custom
 `onGenerateInitialRoutes` opens only the onboarding route; the default would

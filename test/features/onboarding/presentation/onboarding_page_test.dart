@@ -31,6 +31,15 @@ void main() {
     ),
   );
 
+  // Long enough for the page transition, far shorter than a tip's timer.
+  // Lets a page transition finish. When the timer moves on, the transition
+  // only starts a couple of frames later, hence the extra pumps.
+  Future<void> settlePage(WidgetTester tester) async {
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 400));
+  }
+
   String titleOf(int index) => onboardingTips[index].title.toUpperCase();
 
   // Skip keeps its space when hidden so the layout does not jump.
@@ -46,16 +55,16 @@ void main() {
     expect(skipVisible(tester), isTrue);
 
     await tester.tap(find.text('NEXT'));
-    await tester.pumpAndSettle();
+    await settlePage(tester);
     expect(find.text(titleOf(1)), findsOneWidget);
 
     await tester.tap(find.text('NEXT'));
-    await tester.pumpAndSettle();
+    await settlePage(tester);
     expect(find.text(titleOf(2)), findsOneWidget);
     expect(skipVisible(tester), isFalse);
 
     await tester.tap(find.text("LET'S GO"));
-    await tester.pumpAndSettle();
+    await settlePage(tester);
     expect(finished, 1);
     verify(() => repository.markCompleted()).called(1);
   });
@@ -64,7 +73,7 @@ void main() {
     await pumpPage(tester);
 
     await tester.fling(find.text(titleOf(0)), const Offset(-400, 0), 1000);
-    await tester.pumpAndSettle();
+    await settlePage(tester);
 
     expect(find.text(titleOf(1)), findsOneWidget);
     expect(find.text('NEXT'), findsOneWidget);
@@ -74,9 +83,52 @@ void main() {
     await pumpPage(tester);
 
     await tester.tap(find.text('Skip'));
-    await tester.pumpAndSettle();
+    await settlePage(tester);
 
     expect(finished, 1);
     verify(() => repository.markCompleted()).called(1);
+  });
+
+  testWidgets('moves to the next tip after each tip duration', (tester) async {
+    await pumpPage(tester);
+    // The timer starts counting on the first frame after mounting.
+    await tester.pump();
+
+    await tester.pump(
+      kOnboardingTipDuration - const Duration(milliseconds: 100),
+    );
+    expect(find.text(titleOf(0)), findsOneWidget);
+
+    await tester.pump(const Duration(milliseconds: 100));
+    await settlePage(tester);
+    expect(find.text(titleOf(1)), findsOneWidget);
+
+    await tester.pump(kOnboardingTipDuration);
+    await settlePage(tester);
+    expect(find.text(titleOf(2)), findsOneWidget);
+  });
+
+  testWidgets('waits on the last tip instead of finishing', (tester) async {
+    await pumpPage(tester);
+
+    await tester.pumpAndSettle();
+
+    expect(find.text(titleOf(2)), findsOneWidget);
+    expect(find.text("LET'S GO"), findsOneWidget);
+    expect(finished, 0);
+    verifyNever(() => repository.markCompleted());
+  });
+
+  testWidgets('restarts the timer when the user taps Next', (tester) async {
+    await pumpPage(tester);
+    await tester.pump(const Duration(seconds: 4));
+
+    await tester.tap(find.text('NEXT'));
+    await settlePage(tester);
+    await tester.pump(const Duration(seconds: 3));
+
+    // About 4 s into tip 1; a timer carried over from tip 0 would have
+    // moved on already.
+    expect(find.text(titleOf(1)), findsOneWidget);
   });
 }

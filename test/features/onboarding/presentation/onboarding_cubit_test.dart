@@ -51,8 +51,9 @@ void main() {
 
   blocTest<OnboardingCubit, OnboardingState>(
     'still completes and reports the error when saving fails',
-    setUp: () => when(() => repository.markCompleted())
-        .thenThrow(const OnboardingException('disk full')),
+    setUp: () =>
+        when(() => repository.markCompleted())
+            .thenThrow(const OnboardingException('disk full')),
     build: () => OnboardingCubit(repository),
     act: (cubit) => cubit.complete(),
     expect: () => const [OnboardingState(completed: true)],
